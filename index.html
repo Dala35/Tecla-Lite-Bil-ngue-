@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tecla Lite – Comunicação Assistida</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f8ff;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      padding: 10px;
+      background-color: #4b9cd3;
+      color: white;
+      border-radius: 8px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label, select {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #4b9cd3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    #saida {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #222;
+      padding: 10px;
+      background-color: #e6f7ff;
+      border-radius: 8px;
+    }
+    img {
+      max-width: 100px;
+      margin: 10px auto;
+      display: block;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧠 Tecla Lite</h1>
+    <p><em>“Comunicar é um direito. Vamos escutar com o coração.”</em></p>
+  </header>
+
+  <div class="container">
+    <img src="https://cdn-icons-png.flaticon.com/512/2541/2541988.png" alt="ícone de comunicação" />
+
+    <p><strong>Missão:</strong> Ajudar crianças com autismo a expressarem-se com apoio digital. Esta versão permite ouvir a mensagem, salvar em PDF e registrar interações futuras.</p>
+
+    <label for="idioma">Escolha o idioma:</label>
+    <select id="idioma">
+      <option value="pt-PT">Português</option>
+      <option value="en-US">English</option>
+    </select>
+
+    <label for="entrada">Digite a mensagem da criança:</label>
+    <input type="text" id="entrada" placeholder="Ex: Quero brincar com a Tecla"/>
+
+    <button onclick="responder()">🔊 Falar</button>
+    <button onclick="baixarPDF()">⬇️ Baixar PDF</button>
+
+    <div id="saida"></div>
+
+    <!-- Formulário oculto (para futura integração com Google Sheets) -->
+    <form id="formulario" style="display:none;">
+      <input type="hidden" name="mensagem" id="mensagemOculta" />
+      <input type="hidden" name="idioma" id="idiomaOculto" />
+    </form>
+  </div>
+
+  <footer>
+    Criado por Dala De Carvalho · TECLA Lite · Junho 2025
+  </footer>
+
+  <script>
+    function responder() {
+      const entrada = document.getElementById("entrada").value.trim();
+      const idioma = document.getElementById("idioma").value;
+
+      if (entrada === "") {
+        alert("Por favor, digite uma mensagem.");
+        return;
+      }
+
+      const resposta = idioma === "pt-PT"
+        ? "Tecla disse: '" + entrada + "'. Vamos escutar com carinho e atenção."
+        : "Tecla said: '" + entrada + "'. Let's listen with care and attention.";
+
+      document.getElementById("saida").innerText = resposta;
+
+      // Voz
+      const utterThis = new SpeechSynthesisUtterance(resposta);
+      utterThis.lang = idioma;
+      window.speechSynthesis.speak(utterThis);
+
+      // Preencher formulário oculto
+      document.getElementById("mensagemOculta").value = entrada;
+      document.getElementById("idiomaOculto").value = idioma;
+    }
+
+    function baixarPDF() {
+      const saida = document.getElementById("saida").innerText;
+      if (!saida) {
+        alert("Por favor, escreva e fale algo antes de baixar.");
+        return;
+      }
+
+      const blob = new Blob([saida], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "mensagem-tecla.pdf";
+      link.click();
+    }
+  </script>
+</body>
+  </html>
