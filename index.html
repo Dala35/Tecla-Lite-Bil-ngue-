@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+      <!DOCTYPE html>
 <html lang="pt">
 <head>
   <meta charset="UTF-8" />
@@ -11,6 +11,7 @@
       padding: 20px;
       background-color: #f0f8ff;
       color: #333;
+      transition: all 0.3s ease;
     }
     header {
       text-align: center;
@@ -27,15 +28,10 @@
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    label, select {
-      font-weight: bold;
-      display: block;
-      margin-top: 15px;
-    }
     input[type="text"] {
       width: 100%;
       padding: 10px;
-      margin-top: 8px;
+      margin-top: 10px;
       border: 1px solid #ccc;
       border-radius: 8px;
     }
@@ -45,7 +41,7 @@
       padding: 10px 20px;
       border: none;
       border-radius: 8px;
-      margin-top: 15px;
+      margin-top: 10px;
       cursor: pointer;
     }
     #saida {
@@ -56,94 +52,161 @@
       background-color: #e6f7ff;
       border-radius: 8px;
     }
-    img {
-      max-width: 100px;
-      margin: 10px auto;
-      display: block;
+    /* Painel de configurações */
+    #painelConfig {
+      display: none;
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background: #fff;
+      border: 2px solid #4b9cd3;
+      border-radius: 10px;
+      padding: 15px;
+      width: 260px;
+      z-index: 1000;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-    footer {
-      text-align: center;
-      margin-top: 40px;
-      font-size: 12px;
-      color: #777;
+    #painelConfig input, #painelConfig select {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+    #listaFrasesFavoritas {
+      list-style: none;
+      padding-left: 15px;
+      font-size: 14px;
+      color: #444;
     }
   </style>
 </head>
 <body>
   <header>
     <h1>🧠 Tecla Lite</h1>
-    <p><em>“Comunicar é um direito. Vamos escutar com o coração.”</em></p>
+    <p>Prototipagem de assistente de comunicação para crianças autistas</p>
   </header>
 
   <div class="container">
-    <img src="https://cdn-icons-png.flaticon.com/512/2541/2541988.png" alt="ícone de comunicação" />
+    <p><strong>Missão:</strong> Este sistema capta e devolve respostas humanizadas para auxiliar na comunicação de crianças autistas com seus educadores, pais ou cuidadores.</p>
 
-    <p><strong>Missão:</strong> Ajudar crianças com autismo a expressarem-se com apoio digital. Esta versão permite ouvir a mensagem, salvar em PDF e registrar interações futuras.</p>
-
-    <label for="idioma">Escolha o idioma:</label>
-    <select id="idioma">
-      <option value="pt-PT">Português</option>
-      <option value="en-US">English</option>
-    </select>
-
-    <label for="entrada">Digite a mensagem da criança:</label>
-    <input type="text" id="entrada" placeholder="Ex: Quero brincar com a Tecla"/>
-
-    <button onclick="responder()">🔊 Falar</button>
-    <button onclick="baixarPDF()">⬇️ Baixar PDF</button>
+    <label for="entrada">Digite o que a criança deseja comunicar:</label>
+    <input type="text" id="entrada" placeholder="Ex: Teatro Tecla" />
+    <button onclick="responder()">Falar</button>
 
     <div id="saida"></div>
-
-    <!-- Formulário oculto (para futura integração com Google Sheets) -->
-    <form id="formulario" style="display:none;">
-      <input type="hidden" name="mensagem" id="mensagemOculta" />
-      <input type="hidden" name="idioma" id="idiomaOculto" />
-    </form>
   </div>
 
-  <footer>
-    Criado por Dala De Carvalho · TECLA Lite · Junho 2025
-  </footer>
+  <!-- Botão para abrir painel -->
+  <button onclick="abrirConfig()" style="position: fixed; top: 10px; right: 10px;">⚙️ Configurações</button>
+
+  <!-- Painel de Personalização -->
+  <div id="painelConfig">
+    <h3>🎛️ Personalização</h3>
+
+    <label><strong>Idioma:</strong></label>
+    <select id="idiomaSelecionado">
+      <option value="pt">Português</option>
+      <option value="en">Inglês</option>
+    </select>
+
+    <label><input type="checkbox" id="modoCalmo" checked /> Modo Calmo (voz suave)</label>
+
+    <label><strong>Tema:</strong></label>
+    <select id="temaSelecionado">
+      <option value="claro">Claro</option>
+      <option value="escuro">Escuro</option>
+      <option value="calmo">Calmo</option>
+    </select>
+
+    <label><strong>Frases favoritas:</strong></label>
+    <input type="text" id="novaFrase" placeholder="Ex: Quero brincar" />
+    <button onclick="adicionarFrase()">➕</button>
+    <ul id="listaFrasesFavoritas"></ul>
+
+    <button onclick="salvarConfig()">💾 Salvar</button>
+    <button onclick="fecharConfig()">❌ Fechar</button>
+  </div>
 
   <script>
+    let configUsuario = {
+      idioma: "pt",
+      modoCalmo: true,
+      tema: "claro",
+      frasesFavoritas: []
+    };
+
     function responder() {
-      const entrada = document.getElementById("entrada").value.trim();
-      const idioma = document.getElementById("idioma").value;
-
-      if (entrada === "") {
-        alert("Por favor, digite uma mensagem.");
-        return;
-      }
-
-      const resposta = idioma === "pt-PT"
-        ? "Tecla disse: '" + entrada + "'. Vamos escutar com carinho e atenção."
-        : "Tecla said: '" + entrada + "'. Let's listen with care and attention.";
-
-      document.getElementById("saida").innerText = resposta;
-
-      // Voz
-      const utterThis = new SpeechSynthesisUtterance(resposta);
-      utterThis.lang = idioma;
-      window.speechSynthesis.speak(utterThis);
-
-      // Preencher formulário oculto
-      document.getElementById("mensagemOculta").value = entrada;
-      document.getElementById("idiomaOculto").value = idioma;
+      const entrada = document.getElementById("entrada").value;
+      const saida = "Tecla disse: '" + entrada + "'. Vamos entender com carinho e atenção.";
+      document.getElementById("saida").innerText = saida;
+      falar(saida);
     }
 
-    function baixarPDF() {
-      const saida = document.getElementById("saida").innerText;
-      if (!saida) {
-        alert("Por favor, escreva e fale algo antes de baixar.");
-        return;
-      }
-
-      const blob = new Blob([saida], { type: "application/pdf" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "mensagem-tecla.pdf";
-      link.click();
+    function falar(texto) {
+      const synth = window.speechSynthesis;
+      const utter = new SpeechSynthesisUtterance(texto);
+      utter.lang = configUsuario.idioma === "en" ? 'en-US' : 'pt-PT';
+      utter.rate = configUsuario.modoCalmo ? 0.85 : 1;
+      utter.volume = configUsuario.modoCalmo ? 0.7 : 1;
+      synth.speak(utter);
     }
+
+    function abrirConfig() {
+      document.getElementById("painelConfig").style.display = "block";
+    }
+
+    function fecharConfig() {
+      document.getElementById("painelConfig").style.display = "none";
+    }
+
+    function adicionarFrase() {
+      const frase = document.getElementById("novaFrase").value;
+      if (frase) {
+        configUsuario.frasesFavoritas.push(frase);
+        const li = document.createElement("li");
+        li.innerText = frase;
+        document.getElementById("listaFrasesFavoritas").appendChild(li);
+        document.getElementById("novaFrase").value = "";
+      }
+    }
+
+    function salvarConfig() {
+      configUsuario.idioma = document.getElementById("idiomaSelecionado").value;
+      configUsuario.modoCalmo = document.getElementById("modoCalmo").checked;
+      configUsuario.tema = document.getElementById("temaSelecionado").value;
+      localStorage.setItem("configTecla", JSON.stringify(configUsuario));
+      aplicarTema(configUsuario.tema);
+      alert("Configurações salvas!");
+    }
+
+    function aplicarTema(tema) {
+      if (tema === "escuro") {
+        document.body.style.background = "#111";
+        document.body.style.color = "#eee";
+      } else if (tema === "calmo") {
+        document.body.style.background = "#dff6f0";
+        document.body.style.color = "#222";
+      } else {
+        document.body.style.background = "#f0f8ff";
+        document.body.style.color = "#333";
+      }
+    }
+
+    window.onload = function () {
+      const conf = localStorage.getItem("configTecla");
+      if (conf) {
+        configUsuario = JSON.parse(conf);
+        document.getElementById("idiomaSelecionado").value = configUsuario.idioma;
+        document.getElementById("modoCalmo").checked = configUsuario.modoCalmo;
+        document.getElementById("temaSelecionado").value = configUsuario.tema;
+        aplicarTema(configUsuario.tema);
+        configUsuario.frasesFavoritas.forEach(frase => {
+          const li = document.createElement("li");
+          li.innerText = frase;
+          document.getElementById("listaFrasesFavoritas").appendChild(li);
+        });
+      }
+    };
   </script>
 </body>
-  </html>
+</html>
